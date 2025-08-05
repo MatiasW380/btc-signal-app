@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>BTC-USD Scalping 5m</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 2rem; }
+    #signal { font-size: 2rem; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>BTC-USD (5m) Scalping</h1>
+  <div id="signal">Sin señales activas</div>
+  <script>
+    async function fetchSignal() {
+      const el = document.getElementById('signal');
+      try {
+        const res = await fetch('/api/signal');
+        console.log('Status:', res.status);
+        const j   = await res.json();
+        console.log('Payload:', j);
+
+        if (j.error) {
+          el.textContent = 'Error API: ' + j.error;
+          el.style.color = 'gray';
+          return;
+        }
+        if (!j.signal || j.signal === 'Mantener') {
+          el.textContent = 'Sin señales activas';
+          el.style.color = '#666';
+          return;
+        }
+        el.textContent = `${j.signal} (SMA${j.short}/${j.long})`;
+        el.style.color   = j.signal==='Comprar'?'green':'red';
+        alert(`⚡ Señal: ${j.signal}`);
+      } catch (e) {
+        console.error(e);
+        el.textContent = 'Error conexión';
+        el.style.color = 'gray';
+      }
+    }
+    fetchSignal();
+    setInterval(fetchSignal, 5*60*1000);
+  </script>
+</body>
+</html>
