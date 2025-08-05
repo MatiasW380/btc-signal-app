@@ -7,12 +7,17 @@
     body { font-family: sans-serif; text-align: center; padding: 2rem; }
     #signal { font-size: 2rem; }
     #lastDetails { margin-top: 1rem; font-size: 1rem; }
-    #info { text-align: left; margin: 1rem auto; width: 80%; color: #333; }
+    #info { 
+      text-align: left; 
+      margin: 1rem auto; 
+      width: 80%; 
+      color: #333; 
+      white-space: pre-wrap; 
+    }
   </style>
 </head>
 <body>
   <h1>BTC-USD (5m) Scalping</h1>
-
   <div id="signal">Sin señales activas</div>
   <div id="lastDetails"></div>
   <pre id="info"></pre>
@@ -22,10 +27,11 @@
       const el      = document.getElementById('signal');
       const details = document.getElementById('lastDetails');
       const info    = document.getElementById('info');
+      const apiUrl  = window.location.origin + '/api/signal';
 
       try {
-        const res = await fetch('/api/signal');
-        console.log('Status:', res.status);
+        const res = await fetch(apiUrl);
+        console.log('Fetch to', apiUrl, 'Status:', res.status);
         const j   = await res.json();
         console.log('Payload:', j);
         info.textContent = JSON.stringify(j, null, 2);
@@ -37,7 +43,7 @@
           return;
         }
 
-        // 1) Señal actual
+        // Señal actual
         if (j.signal === 'Mantener') {
           el.textContent = 'Sin señales activas';
           el.style.color = '#666';
@@ -47,7 +53,7 @@
           alert(`⚡ Señal: ${j.signal}`);
         }
 
-        // 2) Detalles de la última señal efectiva
+        // Detalles de la última señal efectiva
         if (j.lastSignalTimestamp) {
           const dt = new Date(j.lastSignalTimestamp);
           const dateStr = dt.toLocaleDateString('es-AR', {
@@ -70,15 +76,18 @@
         }
 
       } catch (e) {
-        console.error('Fetch error:', e);
+        console.error('Fetch error:', e.message);
+        info.textContent = 'Fetch error: ' + e.message;
         el.textContent = 'Error conexión';
         el.style.color = 'gray';
         details.textContent = '';
       }
     }
 
-    fetchSignal();
-    setInterval(fetchSignal, 5 * 60 * 1000);
+    window.addEventListener('load', () => {
+      fetchSignal();
+      setInterval(fetchSignal, 5 * 60 * 1000);
+    });
   </script>
 </body>
 </html>
