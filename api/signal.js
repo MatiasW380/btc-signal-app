@@ -1,9 +1,9 @@
 // api/signal.js
 import yahooFinance from 'yahoo-finance2';
 
-const TICKER    = 'BTC-USD';
-const INTERVAL  = '5m';
-const DAYS_BACK = 7;      // 7 días para intradía
+const TICKER   = 'BTC-USD';
+const RANGE    = '1mo';  // Último mes
+const INTERVAL = '5m';   // Velas de 5 minutos
 
 // Calcula SMA de ventana n sobre array de precios
 function sma(arr, n) {
@@ -18,28 +18,27 @@ function sma(arr, n) {
 
 export default async function handler(req, res) {
   try {
-    // 1) Fechas JavaScript
-    const now  = new Date();
-    const then = new Date(now.getTime() - DAYS_BACK * 24*60*60*1000);
-
-    // 2) Descargar datos históricos intradía
-    const quotes = await yahooFinance.historical(TICKER, {
-      period1: then, 
-      period2: now,
+    // 1) Traer datos intradía con chart() y rango válido
+    const data = await yahooFinance.chart(TICKER, {
+      range: RANGE,
       interval: INTERVAL
     });
-    // quotes = [{ date: ..., close: number, ... }, ...]
 
-    // 3) Extraer cierres y filtrar nulos
-    const closes = quotes
-      .map(q => q.close)
-      .filter(c => c != null);
-
-    if (closes.length === 0) {
-      throw new Error('No hay datos de precios en historical()');
+    // 2) Validar
+    const result = data.chart?.result?.[0];
+    if (!result) {
+      console.error('No result in data.chart:', data);
+      throw new Error('No hay datos de gráfico');
     }
+    const closesAll = result.indicators?.quote?.[0]?.close;
+    if (!Array.isArray(closesAll)) {
+      console.error('No close array:', result);
+      throw new Error('No hay datos de precios');
+    }
+    // Filtramos nulos
+    const closes = closesAll.filter(c => c != null);
 
-    // 4) Barrer pares SMA para backtest
+    // 3) Barrer pares SMA para backtest
     let best = { ret: -Infinity, short: 0, long: 0, n: 0 };
     const shorts = [5,10,15,20,25,30];
     const longs  = [35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120];
@@ -49,7 +48,7 @@ export default async function handler(req, res) {
         if (s >= l) continue;
         const smaS = sma(closes, s);
         const smaL = sma(closes, l);
-        let pos = 0, ret = 1, cnt = 0;
+        let pos=0, ret=1, cnt=0;
         for (let i = 1; i < closes.length; i++) {
           const signal = (smaS[i-1] < smaL[i-1] && smaS[i] > smaL[i]) ? 1
                        : (smaS[i-1] > smaL[i-1] && smaS[i] < smaL[i]) ? -1
@@ -57,13 +56,11 @@ export default async function handler(req, res) {
           if (signal !== 0) { pos = signal; cnt++; }
           ret *= 1 + pos * ((closes[i] - closes[i-1]) / closes[i-1]);
         }
-        if (ret - 1 > best.ret) {
-          best = { ret: ret - 1, short: s, long: l, n: cnt };
-        }
+        if (ret - 1 > best.ret) best = { ret: ret - 1, short: s, long: l, n: cnt };
       }
     }
 
-    // 5) Generar señal de la última vela
+    // 4) Señal de la última vela
     const idx = closes.length - 1;
     const smaS = sma(closes, best.short);
     const smaL = sma(closes, best.long);
@@ -71,7 +68,7 @@ export default async function handler(req, res) {
                      : (smaS[idx-1] > smaL[idx-1] && smaS[idx] < smaL[idx]) ? 'Vender'
                      : 'Mantener';
 
-    // 6) Responder JSON
+    // 5) Responder JSON
     return res.status(200).json({
       signal: lastSignal,
       short:  best.short,
