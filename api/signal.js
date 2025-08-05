@@ -1,11 +1,9 @@
 // api/signal.js
-import yahooFinance from 'yahoo-finance2';
+const TICKER   = 'BTC-USD';
+const RANGE    = '1mo';  // Último mes; admite '1mo','7d','5d','1d',...
+const INTERVAL = '5m';   // Velas de 5 minutos
 
-const TICKER      = 'BTC-USD';
-const INTERVAL    = '5m';           // Velas de 5 minutos
-const DAYS_BACK   = 7;              // Últimos 7 días
-const MS_PER_DAY  = 24 * 60 * 60 * 1000;
-
+// Calcula la SMA de ventana n sobre array de precios
 function sma(arr, n) {
   const out = [];
   for (let i = 0; i < arr.length; i++) {
@@ -18,31 +16,24 @@ function sma(arr, n) {
 
 export default async function handler(req, res) {
   try {
-    // 1) Definir los objetos Date para period1 y period2
-    const now  = new Date();
-    const then = new Date(now.getTime() - DAYS_BACK * MS_PER_DAY);
+    // 1) Llamada directa al API público de Yahoo
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}` +
+                `?range=${RANGE}&interval=${INTERVAL}`;
+    const r   = await fetch(url);
+    if (!r.ok) throw new Error(`Yahoo API responded ${r.status}`);
+    const j   = await r.json();
 
-    // 2) Descargar históricos intradía con ambos periodos
-    const quotes = await yahooFinance.historical(TICKER, {
-      period1: then, 
-      period2: now,
-      interval: INTERVAL
-    });
+    // 2) Validaciones básicas
+    const result = j.chart?.result?.[0];
+    if (!result) throw new Error('No hay data.chart.result');
+    const closesAll = result.indicators?.quote?.[0]?.close;
+    if (!Array.isArray(closesAll)) throw new Error('No hay quote.close');
 
-    if (!quotes || quotes.length === 0) {
-      throw new Error('No hay datos de precios en historical()');
-    }
+    // 3) Filtrar nulos
+    const closes = closesAll.filter(c => c != null);
+    if (closes.length < 10) throw new Error('Datos insuficientes');
 
-    // 3) Extraer cierres válidos
-    const closes = quotes
-      .map(q => q.close)
-      .filter(c => c != null);
-
-    if (closes.length < 10) {
-      throw new Error('Pocos datos de precios');
-    }
-
-    // 4) Backtest para encontrar el mejor cruce SMA
+    // 4) Backtest para encontrar cruce SMA óptimo
     let best = { ret: -Infinity, short: 0, long: 0, n: 0 };
     const shorts = [5,10,15,20,25,30];
     const longs  = [35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120];
@@ -60,9 +51,7 @@ export default async function handler(req, res) {
           if (signal !== 0) { pos = signal; cnt++; }
           ret *= 1 + pos * ((closes[i] - closes[i-1]) / closes[i-1]);
         }
-        if (ret - 1 > best.ret) {
-          best = { ret: ret - 1, short: s, long: l, n: cnt };
-        }
+        if (ret - 1 > best.ret) best = { ret: ret - 1, short: s, long: l, n: cnt };
       }
     }
 
@@ -74,7 +63,7 @@ export default async function handler(req, res) {
                      : (smaS[idx-1] > smaL[idx-1] && smaS[idx] < smaL[idx]) ? 'Vender'
                      : 'Mantener';
 
-    // 6) Responder JSON
+    // 6) Envío de JSON
     return res.status(200).json({
       signal: lastSignal,
       short:  best.short,
@@ -82,7 +71,6 @@ export default async function handler(req, res) {
       ret:    (best.ret * 100).toFixed(2),
       n:      best.n
     });
-
   } catch (e) {
     console.error('API /api/signal error:', e.message);
     return res.status(500).json({ error: e.message });
