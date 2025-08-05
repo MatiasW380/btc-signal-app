@@ -24,14 +24,9 @@
       font-size: 1.2rem;
       font-weight: bold;
     }
-    #info {
-      text-align: left;
-      margin: 1rem auto;
-      width: 80%;
-      color: #333;
-      white-space: pre-wrap;
-      font-family: monospace;
-      font-size: 0.9rem;
+    #error {
+      color: red;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -41,42 +36,30 @@
   <div id="signal">Sin señales activas</div>
   <div id="lastDetails"></div>
   <div id="summary"></div>
-  <pre id="info"></pre>
+  <div id="error"></div>
 
   <script>
     async function fetchSignal() {
       const el      = document.getElementById('signal');
       const details = document.getElementById('lastDetails');
       const summary = document.getElementById('summary');
-      const info    = document.getElementById('info');
+      const errorEl = document.getElementById('error');
       const apiUrl  = window.location.origin + '/api/signal';
+
+      // Limpio mensajes previos
+      errorEl.textContent = '';
+      summary.textContent = '';
 
       try {
         const res = await fetch(apiUrl);
-        console.log('Fetch to', apiUrl, 'Status:', res.status);
 
         if (!res.ok) {
-          const text = await res.text();
-          el.textContent = `Error API: HTTP ${res.status}`;
-          el.style.color = 'gray';
-          document.body.style.backgroundColor = '';
-          summary.textContent = '';
-          info.textContent = text;
-          details.textContent = '';
-          return;
+          throw new Error(`HTTP ${res.status}`);
         }
 
         const j = await res.json();
-        console.log('Payload:', j);
-        info.textContent = JSON.stringify(j, null, 2);
-
         if (j.error) {
-          el.textContent = 'Error API: ' + j.error;
-          el.style.color = 'gray';
-          document.body.style.backgroundColor = '';
-          summary.textContent = '';
-          details.textContent = '';
-          return;
+          throw new Error(j.error);
         }
 
         // Señal actual
@@ -89,7 +72,7 @@
           el.style.color = 'white';
           document.body.style.backgroundColor = 'green';
           alert(`⚡ Señal: ${j.signal}`);
-        } else if (j.signal === 'Vender') {
+        } else { // Vender
           el.textContent = `${j.signal} (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
           document.body.style.backgroundColor = 'red';
@@ -126,17 +109,5 @@
         console.error('Fetch error:', e.message);
         el.textContent = 'Error conexión';
         el.style.color = 'gray';
-        document.body.style.backgroundColor = '';
-        summary.textContent = '';
-        info.textContent = 'Fetch error: ' + e.message;
-        details.textContent = '';
-      }
-    }
-
-    window.addEventListener('load', () => {
-      fetchSignal();
-      setInterval(fetchSignal, 5 * 60 * 1000);
-    });
-  </script>
-</body>
-</html>
+        document.body.style.backgr
+::contentReference[oaicite:0]{index=0}
