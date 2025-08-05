@@ -7,12 +7,12 @@
     body { font-family: sans-serif; text-align: center; padding: 2rem; }
     #signal { font-size: 2rem; }
     #lastDetails { margin-top: 1rem; font-size: 1rem; }
-    #info { 
-      text-align: left; 
-      margin: 1rem auto; 
-      width: 80%; 
-      color: #333; 
-      white-space: pre-wrap; 
+    #info {
+      text-align: left;
+      margin: 1rem auto;
+      width: 80%;
+      color: #333;
+      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -32,10 +32,36 @@
       try {
         const res = await fetch(apiUrl);
         console.log('Fetch to', apiUrl, 'Status:', res.status);
-        const j   = await res.json();
+
+        // Si no es 200 OK, mostramos el texto de error
+        if (!res.ok) {
+          const text = await res.text();
+          console.error('API error body:', text);
+          el.textContent = `Error API: HTTP ${res.status}`;
+          el.style.color = 'gray';
+          info.textContent = text;
+          details.textContent = '';
+          return;
+        }
+
+        // Ahora ya es OK, parseamos JSON con seguridad
+        let j;
+        try {
+          j = await res.json();
+        } catch(parseErr) {
+          const txt = await res.text();
+          console.error('JSON parse error, body was:', txt);
+          el.textContent = 'Error al leer datos JSON';
+          el.style.color = 'gray';
+          info.textContent = txt;
+          details.textContent = '';
+          return;
+        }
+
         console.log('Payload:', j);
         info.textContent = JSON.stringify(j, null, 2);
 
+        // Si la API devolvió su propio error JSON
         if (j.error) {
           el.textContent = 'Error API: ' + j.error;
           el.style.color = 'gray';
@@ -43,7 +69,7 @@
           return;
         }
 
-        // Señal actual
+        // 1) Señal actual
         if (j.signal === 'Mantener') {
           el.textContent = 'Sin señales activas';
           el.style.color = '#666';
@@ -53,7 +79,7 @@
           alert(`⚡ Señal: ${j.signal}`);
         }
 
-        // Detalles de la última señal efectiva
+        // 2) Detalles de la última señal efectiva
         if (j.lastSignalTimestamp) {
           const dt = new Date(j.lastSignalTimestamp);
           const dateStr = dt.toLocaleDateString('es-AR', {
@@ -76,10 +102,10 @@
         }
 
       } catch (e) {
-        console.error('Fetch error:', e.message);
-        info.textContent = 'Fetch error: ' + e.message;
+        console.error('Fetch error:', e);
         el.textContent = 'Error conexión';
         el.style.color = 'gray';
+        info.textContent = 'Fetch error: ' + e.message;
         details.textContent = '';
       }
     }
