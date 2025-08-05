@@ -1,46 +1,78 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <title>BTC-USD Scalping 5m</title>
   <style>
     body { font-family: sans-serif; text-align: center; padding: 2rem; }
-    #signal { font-size: 2rem; color: #666; }
+    #signal { font-size: 2rem; }
+    #lastDetails { margin-top: 1rem; font-size: 1rem; }
+    #info { text-align: left; margin: 1rem auto; width: 80%; color: #333; }
   </style>
 </head>
 <body>
   <h1>BTC-USD (5m) Scalping</h1>
+
   <div id="signal">Sin señales activas</div>
+  <div id="lastDetails"></div>
+  <pre id="info"></pre>
+
   <script>
     async function fetchSignal() {
-      const el = document.getElementById('signal');
+      const el      = document.getElementById('signal');
+      const details = document.getElementById('lastDetails');
+      const info    = document.getElementById('info');
+
       try {
         const res = await fetch('/api/signal');
-        console.log('Status:', res.status);
         const j   = await res.json();
-        console.log('Payload:', j);
+        info.textContent = JSON.stringify(j, null, 2);
 
         if (j.error) {
           el.textContent = 'Error API: ' + j.error;
           el.style.color = 'gray';
+          details.textContent = '';
           return;
         }
-        if (!j.signal || j.signal === 'Mantener') {
+
+        // 1) Señal actual
+        if (j.signal === 'Mantener') {
           el.textContent = 'Sin señales activas';
           el.style.color = '#666';
-          return;
+        } else {
+          el.textContent = `${j.signal} (SMA${j.short}/${j.long})`;
+          el.style.color = j.signal === 'Comprar' ? 'green' : 'red';
+          alert(`⚡ Señal: ${j.signal}`);
         }
-        el.textContent = `${j.signal} (SMA${j.short}/${j.long})`;
-        el.style.color   = j.signal==='Comprar'?'green':'red';
-        alert(`⚡ Señal: ${j.signal}`);
+
+        // 2) Última señal efectiva
+        if (j.lastSignalTimestamp) {
+          const dt = new Date(j.lastSignalTimestamp);
+          const dateStr = dt.toLocaleDateString('es-AR', {
+            timeZone: 'America/Argentina/Buenos_Aires'
+          });
+          const timeStr = dt.toLocaleTimeString('es-AR', {
+            hour: '2-digit', minute: '2-digit', hour12: false,
+            timeZone: 'America/Argentina/Buenos_Aires'
+          });
+          const color = j.variation >= 0 ? 'green' : 'red';
+
+          details.innerHTML =
+            `<div>Última señal: <strong>${j.lastSignalType}</strong></div>` +
+            `<div>Fecha/hora: ${dateStr} ${timeStr} GMT-3</div>` +
+            `<div>Variación: <span style="color:${color}">${j.variation.toFixed(2)}%</span></div>`;
+        }
+
       } catch (e) {
         console.error(e);
         el.textContent = 'Error conexión';
         el.style.color = 'gray';
+        details.textContent = '';
       }
     }
+
     fetchSignal();
-    setInterval(fetchSignal, 5*60*1000);
+    setInterval(fetchSignal, 5 * 60 * 1000);
   </script>
 </body>
 </html>
