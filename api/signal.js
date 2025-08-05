@@ -1,11 +1,11 @@
 // api/signal.js
 import yahooFinance from 'yahoo-finance2';
 
-const TICKER    = 'BTC-USD';
-const INTERVAL  = '5m';   // Velas de 5 minutos
-const DAYS_BACK = 7;      // Últimos 7 días
+const TICKER      = 'BTC-USD';
+const INTERVAL    = '5m';           // Velas de 5 minutos
+const DAYS_BACK   = 7;              // Últimos 7 días
+const MS_PER_DAY  = 24 * 60 * 60 * 1000;
 
-// Calcula la SMA de ventana n sobre un array de precios
 function sma(arr, n) {
   const out = [];
   for (let i = 0; i < arr.length; i++) {
@@ -18,23 +18,22 @@ function sma(arr, n) {
 
 export default async function handler(req, res) {
   try {
-    // 1) Fecha de inicio (period1) en YYYY-MM-DD
+    // 1) Definir los objetos Date para period1 y period2
     const now  = new Date();
-    const then = new Date(now.getTime() - DAYS_BACK * 24 * 60 * 60 * 1000);
-    const period1 = then.toISOString().slice(0, 10); 
+    const then = new Date(now.getTime() - DAYS_BACK * MS_PER_DAY);
 
-    // 2) Descargar históricos intradía
+    // 2) Descargar históricos intradía con ambos periodos
     const quotes = await yahooFinance.historical(TICKER, {
-      period1,           // p.e. "2025-07-29"
-      interval: INTERVAL // "5m"
-      // omitimos period2: usa ahora por defecto
+      period1: then, 
+      period2: now,
+      interval: INTERVAL
     });
 
     if (!quotes || quotes.length === 0) {
       throw new Error('No hay datos de precios en historical()');
     }
 
-    // 3) Extraer y filtrar cierres válidos
+    // 3) Extraer cierres válidos
     const closes = quotes
       .map(q => q.close)
       .filter(c => c != null);
@@ -68,14 +67,14 @@ export default async function handler(req, res) {
     }
 
     // 5) Señal de la última vela
-    const idx = closes.length - 1;
-    const smaS = sma(closes, best.short);
-    const smaL = sma(closes, best.long);
+    const idx   = closes.length - 1;
+    const smaS  = sma(closes, best.short);
+    const smaL  = sma(closes, best.long);
     const lastSignal = (smaS[idx-1] < smaL[idx-1] && smaS[idx] > smaL[idx]) ? 'Comprar'
                      : (smaS[idx-1] > smaL[idx-1] && smaS[idx] < smaL[idx]) ? 'Vender'
                      : 'Mantener';
 
-    // 6) Devolver JSON con la señal y parámetros
+    // 6) Responder JSON
     return res.status(200).json({
       signal: lastSignal,
       short:  best.short,
