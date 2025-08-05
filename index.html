@@ -25,7 +25,9 @@
 
       try {
         const res = await fetch('/api/signal');
+        console.log('Status:', res.status);
         const j   = await res.json();
+        console.log('Payload:', j);
         info.textContent = JSON.stringify(j, null, 2);
 
         if (j.error) {
@@ -45,14 +47,16 @@
           alert(`⚡ Señal: ${j.signal}`);
         }
 
-        // 2) Última señal efectiva
+        // 2) Detalles de la última señal efectiva
         if (j.lastSignalTimestamp) {
           const dt = new Date(j.lastSignalTimestamp);
           const dateStr = dt.toLocaleDateString('es-AR', {
             timeZone: 'America/Argentina/Buenos_Aires'
           });
           const timeStr = dt.toLocaleTimeString('es-AR', {
-            hour: '2-digit', minute: '2-digit', hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
             timeZone: 'America/Argentina/Buenos_Aires'
           });
           const color = j.variation >= 0 ? 'green' : 'red';
@@ -61,10 +65,12 @@
             `<div>Última señal: <strong>${j.lastSignalType}</strong></div>` +
             `<div>Fecha/hora: ${dateStr} ${timeStr} GMT-3</div>` +
             `<div>Variación: <span style="color:${color}">${j.variation.toFixed(2)}%</span></div>`;
+        } else {
+          details.textContent = '';
         }
 
       } catch (e) {
-        console.error(e);
+        console.error('Fetch error:', e);
         el.textContent = 'Error conexión';
         el.style.color = 'gray';
         details.textContent = '';
