@@ -1,5 +1,4 @@
 // api/signal.js
-import fetch from 'node-fetch';
 
 const TICKER   = 'BTC-USD';
 const RANGE    = '1mo';  // Último mes
@@ -18,7 +17,7 @@ function sma(arr, n) {
 
 export default async function handler(req, res) {
   try {
-    // 1) Traer datos con fetch directo a Yahoo
+    // 1) Llamada directa al API público (fetch global)
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}` +
                 `?range=${RANGE}&interval=${INTERVAL}`;
     const r   = await fetch(url);
@@ -26,9 +25,9 @@ export default async function handler(req, res) {
     const j   = await r.json();
 
     // 2) Validar estructura
-    const result       = j.chart?.result?.[0];
-    const closesAll    = result?.indicators?.quote?.[0]?.close;
-    const timestampsAll= result?.timestamp;
+    const result        = j.chart?.result?.[0];
+    const closesAll     = result?.indicators?.quote?.[0]?.close;
+    const timestampsAll = result?.timestamp;
     if (!result || !Array.isArray(closesAll) || !Array.isArray(timestampsAll)) {
       throw new Error('Respuesta con formato inesperado');
     }
@@ -77,7 +76,7 @@ export default async function handler(req, res) {
     });
 
     // Señal actual (última vela)
-    const currSig = signalsArr[signalsArr.length - 1];
+    const currSig       = signalsArr[signalsArr.length - 1];
     const currentSignal = currSig === 1 ? 'Comprar'
                           : currSig === -1 ? 'Vender'
                           : 'Mantener';
@@ -85,11 +84,11 @@ export default async function handler(req, res) {
     // 6) Última señal efectiva
     const effIdxs      = signalsArr.map((v,i) => v!==0 ? i : null).filter(i => i!=null);
     const lastEffIdx   = effIdxs[effIdxs.length - 1];
-    const lastSignalType       = signalsArr[lastEffIdx] === 1 ? 'Compra' : 'Venta';
-    const tsLastSignal         = timestamps[lastEffIdx] * 1000; // ms
-    const priceAtSignal        = closes[lastEffIdx];
-    const priceNow             = closes[closes.length - 1];
-    const variation            = parseFloat(((priceNow/priceAtSignal - 1) * 100).toFixed(2));
+    const lastSignalType = signalsArr[lastEffIdx] === 1 ? 'Compra' : 'Venta';
+    const tsLastSignal   = timestamps[lastEffIdx] * 1000; // ms
+    const priceAtSignal  = closes[lastEffIdx];
+    const priceNow       = closes[closes.length - 1];
+    const variation      = parseFloat(((priceNow/priceAtSignal - 1) * 100).toFixed(2));
 
     // 7) Devolver JSON con todo
     return res.status(200).json({
