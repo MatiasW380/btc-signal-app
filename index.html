@@ -1,6 +1,3 @@
-Aquí tienes el código HTML actualizado con la corrección para la traducción de "Last signal: Compra" y los mensajes de alerta, y el resto de los cambios que solicitaste.
-
-``` html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -189,15 +186,15 @@ Aquí tienes el código HTML actualizado con la corrección para la traducción 
         // Current Signal
         let currentSignalText = '';
         let backgroundColor = '#1a1a2e';
-        if (j.signal === 'Mantener' || j.signal === 'Hold') {
+        if (j.signal === 'Hold' || j.signal === 'Hold') {
           currentSignalText = 'Hold';
           el.style.color = '#666';
-        } else if (j.signal === 'Comprar' || j.signal === 'Buy') {
+        } else if (j.signal === 'Buy' || j.signal === 'Buy') {
           currentSignalText = `Buy (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
           backgroundColor = 'green';
           alert(`⚡ Signal: Buy`);
-        } else if (j.signal === 'Vender' || j.signal === 'Sell') {
+        } else if (j.signal === 'Sell' || j.signal === 'Sell') {
           currentSignalText = `Sell (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
           backgroundColor = 'red';
@@ -222,11 +219,11 @@ Aquí tienes el código HTML actualizado con la corrección para la traducción 
           const color = j.variation >= 0 ? 'green' : 'red';
 
           let lastSignalTypeTranslated = j.lastSignalType;
-          if (j.lastSignalType === 'Mantener') {
+          if (j.lastSignalType === 'Hold') {
             lastSignalTypeTranslated = 'Hold';
-          } else if (j.lastSignalType === 'Comprar') {
+          } else if (j.lastSignalType === 'buy') {
             lastSignalTypeTranslated = 'Buy';
-          } else if (j.lastSignalType === 'Vender') {
+          } else if (j.lastSignalType === 'sell') {
             lastSignalTypeTranslated = 'Sell';
           }
 
@@ -263,5 +260,3 @@ Aquí tienes el código HTML actualizado con la corrección para la traducción 
   </script>
 </body>
 </html>
-
-```
