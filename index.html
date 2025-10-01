@@ -96,6 +96,35 @@
       background-color: #0c85d0;
     }
 
+    .donation-section {
+      margin-top: 3rem;
+      padding: 1.5rem;
+      background-color: #282844;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      color: #e0e0e0;
+    }
+
+    .donation-section h2 {
+      color: #00bcd4;
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+    }
+
+    .donation-section p {
+      margin-bottom: 0.8rem;
+    }
+
+    .donation-address {
+      font-weight: bold;
+      color: #ffffff;
+      word-break: break-all; /* Ensures long address wraps */
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       body {
@@ -116,7 +145,7 @@
       #summary {
         font-size: 1.1rem;
       }
-      #info {
+      #info, .donation-section {
         width: 95%;
         padding: 1rem;
       }
@@ -162,6 +191,14 @@
   <pre id="info"></pre>
 
   <a href="https://x.com/X3Bitcoin" target="_blank" class="twitter-link">Follow TheBitcoinX on X</a>
+
+  <div class="donation-section">
+    <h2>Support TheBitcoinX</h2>
+    <p>This page provides valuable buy and sell signals that can lead to significant gains, all offered completely free of charge. Similar signal services typically cost between $100 and $500 per month.</p>
+    <p>If you wish to show your appreciation and support our work, you can voluntarily contribute. Donations can be sent in USDT (TRC20 network) to the following address:</p>
+    <p class="donation-address">TKvF91E4CnJ5utby57kfiTVjG6V4ENjE29</p>
+    <p>Your support helps us keep this service free and continuously improve it.</p>
+  </div>
 
   <script>
     async function fetchSignal() {
