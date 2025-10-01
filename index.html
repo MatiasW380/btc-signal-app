@@ -1,7 +1,3 @@
-Entiendo perfectamente la frustración. 
-Aquí tienes el código HTML completo y modificado con esta última corrección:
-
-``` 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -231,7 +227,7 @@ Aquí tienes el código HTML completo y modificado con esta última corrección:
           } else if (j.lastSignalType === 'Vender') {
             lastSignalTypeTranslated = 'Sell';
           }
-
+          // Here's the crucial change: ensure lastSignalTypeTranslated is used
           details.innerHTML =
             `<div>Last signal: <strong>${lastSignalTypeTranslated}</strong></div>` +
             `<div>Date/Time: ${dateStr} ${timeStr} GMT</div>` +
