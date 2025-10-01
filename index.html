@@ -1,55 +1,167 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>BTC-USD Scalping 5m</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TheBitcoinX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: sans-serif;
+      font-family: 'Roboto', sans-serif;
       text-align: center;
       padding: 2rem;
       margin: 0;
+      background-color: #1a1a2e; /* Dark background for a sleek look */
+      color: #e0e0e0; /* Light text color */
       transition: background-color 0.5s ease;
+      line-height: 1.6;
     }
+
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      color: #00bcd4; /* Accent color for the title */
+      margin-bottom: 1.5rem;
+      font-size: 2.5rem;
+    }
+
     #signal {
-      font-size: 2rem;
+      font-size: 2.5rem;
       margin-bottom: 1rem;
+      font-weight: bold;
+      color: #ffffff;
     }
+
     #lastDetails {
       margin-top: 1rem;
-      font-size: 1rem;
+      font-size: 1.1rem;
+      color: #b0b0b0;
     }
+
     #summary {
       margin-top: 2rem;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       font-weight: bold;
+      color: #00bcd4;
     }
+
     #info {
       text-align: left;
-      margin: 1rem auto;
-      width: 80%;
-      color: #333;
+      margin: 1.5rem auto;
+      width: 90%;
+      max-width: 700px;
+      background-color: #282844; /* Slightly lighter dark background for code */
+      padding: 1.5rem;
+      border-radius: 8px;
+      color: #a0a0a0;
       white-space: pre-wrap;
-      font-family: monospace;
+      font-family: 'monospace';
       font-size: 0.9rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      overflow-x: auto; /* For responsiveness with code blocks */
+    }
+
+    .twitter-link {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.8rem 1.5rem;
+      background-color: #1da1f2; /* Twitter blue */
+      color: white;
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .twitter-link:hover {
+      background-color: #0c85d0;
+    }
+
+    .twitter-feed-container {
+      margin-top: 3rem;
+      padding: 1.5rem;
+      background-color: #282844;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .twitter-feed-container h2 {
+      color: #00bcd4;
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      #signal {
+        font-size: 2rem;
+      }
+      #summary {
+        font-size: 1.1rem;
+      }
+      #info, .twitter-feed-container {
+        width: 95%;
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      #signal {
+        font-size: 1.8rem;
+      }
+      #lastDetails {
+        font-size: 0.9rem;
+      }
+      #summary {
+        font-size: 1rem;
+      }
+      .twitter-link {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
 <body>
   <h1>BTC-USD (5m) Scalping</h1>
 
-  <div id="signal">Sin señales activas</div>
+  <div id="signal">No active signals</div>
+
   <div id="lastDetails"></div>
+
   <div id="summary"></div>
+
   <pre id="info"></pre>
+
+  <a href="https://x.com/X3Bitcoin" target="_blank" class="twitter-link">Follow TheBitcoinX on X</a>
+
+  <div class="twitter-feed-container">
+    <h2>Latest from @X3Bitcoin</h2>
+    <p>Content for the latest publications from @X3Bitcoin would go here.</p>
+    <p>To display live tweets, you'll typically need to use the X (Twitter) API or an official embed widget, which requires a more advanced setup beyond simple HTML/JS due to API rate limits and authentication.</p>
+  </div>
 
   <script>
     async function fetchSignal() {
-      const el      = document.getElementById('signal');
+      const el = document.getElementById('signal');
       const details = document.getElementById('lastDetails');
       const summary = document.getElementById('summary');
-      const info    = document.getElementById('info');
-      const apiUrl  = window.location.origin + '/api/signal';
+      const info = document.getElementById('info');
+      const apiUrl = window.location.origin + '/api/signal';
 
       try {
         const res = await fetch(apiUrl);
@@ -57,9 +169,9 @@
 
         if (!res.ok) {
           const text = await res.text();
-          el.textContent = `Error API: HTTP ${res.status}`;
+          el.textContent = `API Error: HTTP ${res.status}`;
           el.style.color = 'gray';
-          document.body.style.backgroundColor = '';
+          document.body.style.backgroundColor = '#1a1a2e';
           summary.textContent = '';
           info.textContent = text;
           details.textContent = '';
@@ -71,38 +183,39 @@
         info.textContent = JSON.stringify(j, null, 2);
 
         if (j.error) {
-          el.textContent = 'Error API: ' + j.error;
+          el.textContent = 'API Error: ' + j.error;
           el.style.color = 'gray';
-          document.body.style.backgroundColor = '';
+          document.body.style.backgroundColor = '#1a1a2e';
           summary.textContent = '';
           details.textContent = '';
           return;
         }
 
-        // Señal actual
-        if (j.signal === 'Mantener') {
-          el.textContent = 'Sin señales activas';
+        // Current Signal
+        if (j.signal === 'Mantener' || j.signal === 'Hold') { // Added 'Hold' for English
+          el.textContent = 'No active signals';
           el.style.color = '#666';
-          document.body.style.backgroundColor = '';
-        } else if (j.signal === 'Comprar') {
+          document.body.style.backgroundColor = '#1a1a2e';
+        } else if (j.signal === 'Comprar' || j.signal === 'Buy') { // Added 'Buy' for English
           el.textContent = `${j.signal} (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
           document.body.style.backgroundColor = 'green';
-          alert(`⚡ Señal: ${j.signal}`);
-        } else if (j.signal === 'Vender') {
+          alert(`⚡ Signal: ${j.signal}`);
+        } else if (j.signal === 'Vender' || j.signal === 'Sell') { // Added 'Sell' for English
           el.textContent = `${j.signal} (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
           document.body.style.backgroundColor = 'red';
-          alert(`⚡ Señal: ${j.signal}`);
+          alert(`⚡ Signal: ${j.signal}`);
         }
 
-        // Detalles de la última señal efectiva
+
+        // Details of the last effective signal
         if (j.lastSignalTimestamp) {
           const dt = new Date(j.lastSignalTimestamp);
-          const dateStr = dt.toLocaleDateString('es-AR', {
+          const dateStr = dt.toLocaleDateString('en-US', {
             timeZone: 'America/Argentina/Buenos_Aires'
           });
-          const timeStr = dt.toLocaleTimeString('es-AR', {
+          const timeStr = dt.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false,
@@ -111,27 +224,30 @@
           const color = j.variation >= 0 ? 'green' : 'red';
 
           details.innerHTML =
-            `<div>Última señal: <strong>${j.lastSignalType}</strong></div>` +
-            `<div>Fecha/hora: ${dateStr} ${timeStr} GMT-3</div>` +
-            `<div>Variación: <span style="color:${color}">${j.variation.toFixed(2)}%</span></div>`;
+            `<div>Last signal: <strong>${j.lastSignalType}</strong></div>` +
+            `<div>Date/Time: ${dateStr} ${timeStr} GMT-3</div>` +
+            `<div>Variation: <span style="color:${color}">${j.variation.toFixed(2)}%</span></div>`;
         } else {
           details.textContent = '';
         }
 
-        // Resumen final: short, long y rendimiento mensual
+
+        // Final Summary: short, long and monthly performance
         summary.textContent =
-          `Short: ${j.short}, Long: ${j.long} — Rendimiento mes: ${j.ret.toFixed(2)}%`;
+          `Short: ${j.short}, Long: ${j.long} — Monthly Performance: ${j.ret.toFixed(2)}%`;
+
 
       } catch (e) {
         console.error('Fetch error:', e.message);
-        el.textContent = 'Error conexión';
+        el.textContent = 'Connection Error';
         el.style.color = 'gray';
-        document.body.style.backgroundColor = '';
+        document.body.style.backgroundColor = '#1a1a2e';
         summary.textContent = '';
         info.textContent = 'Fetch error: ' + e.message;
         details.textContent = '';
       }
     }
+
 
     window.addEventListener('load', () => {
       fetchSignal();
