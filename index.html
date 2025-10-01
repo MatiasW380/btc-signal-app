@@ -19,11 +19,19 @@
       line-height: 1.6;
     }
 
-    h1 {
+    #main-title {
       font-family: 'Montserrat', sans-serif;
       color: #00bcd4; /* Accent color for the title */
-      margin-bottom: 0.5rem; /* Reduced margin to fit description */
-      font-size: 2.5rem;
+      font-size: 3.5rem; /* Larger size for the main title */
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      color: #a0a0a0; /* Slightly subdued color for the subtitle */
+      margin-bottom: 0.5rem;
+      font-size: 1.8rem; /* Reduced size for the subtitle */
     }
 
     .page-description {
@@ -93,8 +101,11 @@
       body {
         padding: 1rem;
       }
+      #main-title {
+        font-size: 2.8rem;
+      }
       h1 {
-        font-size: 2rem;
+        font-size: 1.5rem;
       }
       .page-description {
         font-size: 0.9rem;
@@ -112,8 +123,11 @@
     }
 
     @media (max-width: 480px) {
+      #main-title {
+        font-size: 2.2rem;
+      }
       h1 {
-        font-size: 1.8rem;
+        font-size: 1.2rem;
       }
       .page-description {
         font-size: 0.8rem;
@@ -135,6 +149,7 @@
   </style>
 </head>
 <body>
+  <div id="main-title">TheBitcoinX</div>
   <h1>BTC-USD (15m) Scalping</h1>
   <p class="page-description">This page displays BTC/USDT buy or sell signals, the last signal, and the variation since that signal. Signals are based on the most profitable moving average cross from the last two months. We first calculate the most profitable moving average cross and then provide the signal based on that cross. You can also see the profitability of following the signals over the last thirty days.</p>
 
