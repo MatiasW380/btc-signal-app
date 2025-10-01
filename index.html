@@ -22,8 +22,17 @@
     h1 {
       font-family: 'Montserrat', sans-serif;
       color: #00bcd4; /* Accent color for the title */
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.5rem; /* Reduced margin to fit description */
       font-size: 2.5rem;
+    }
+
+    .page-description {
+      font-size: 1rem;
+      color: #a0a0a0;
+      margin-bottom: 1.5rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     #signal {
@@ -104,6 +113,9 @@
       h1 {
         font-size: 2rem;
       }
+      .page-description {
+        font-size: 0.9rem;
+      }
       #signal {
         font-size: 2rem;
       }
@@ -119,6 +131,9 @@
     @media (max-width: 480px) {
       h1 {
         font-size: 1.8rem;
+      }
+      .page-description {
+        font-size: 0.8rem;
       }
       #signal {
         font-size: 1.8rem;
@@ -138,6 +153,7 @@
 </head>
 <body>
   <h1>BTC-USD (5m) Scalping</h1>
+  <p class="page-description">This page displays BTC/USDT buy or sell signals based on the most profitable moving average cross from the last two months. We first calculate the most profitable moving average cross and then provide the signal based on that cross. You can also see the profitability of following the signals over the last thirty days.</p>
 
   <div id="signal">No active signals</div>
 
@@ -192,20 +208,20 @@
         }
 
         // Current Signal
-        if (j.signal === 'Mantener' || j.signal === 'Hold') { // Added 'Hold' for English
-          el.textContent = 'No active signals';
+        if (j.signal === 'Mantener' || j.signal === 'Hold') {
+          el.textContent = 'Hold';
           el.style.color = '#666';
           document.body.style.backgroundColor = '#1a1a2e';
-        } else if (j.signal === 'Comprar' || j.signal === 'Buy') { // Added 'Buy' for English
-          el.textContent = `${j.signal} (SMA${j.short}/${j.long})`;
+        } else if (j.signal === 'Comprar' || j.signal === 'Buy') {
+          el.textContent = `Buy (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
           document.body.style.backgroundColor = 'green';
-          alert(`⚡ Signal: ${j.signal}`);
-        } else if (j.signal === 'Vender' || j.signal === 'Sell') { // Added 'Sell' for English
-          el.textContent = `${j.signal} (SMA${j.short}/${j.long})`;
+          alert(`⚡ Signal: Buy`);
+        } else if (j.signal === 'Vender' || j.signal === 'Sell') {
+          el.textContent = `Sell (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
           document.body.style.backgroundColor = 'red';
-          alert(`⚡ Signal: ${j.signal}`);
+          alert(`⚡ Signal: Sell`);
         }
 
 
@@ -213,19 +229,19 @@
         if (j.lastSignalTimestamp) {
           const dt = new Date(j.lastSignalTimestamp);
           const dateStr = dt.toLocaleDateString('en-US', {
-            timeZone: 'America/Argentina/Buenos_Aires'
-          });
+            timeZone: 'GMT'
+          }); // Changed to GMT
           const timeStr = dt.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false,
-            timeZone: 'America/Argentina/Buenos_Aires'
-          });
+            timeZone: 'GMT'
+          }); // Changed to GMT
           const color = j.variation >= 0 ? 'green' : 'red';
 
           details.innerHTML =
-            `<div>Last signal: <strong>${j.lastSignalType}</strong></div>` +
-            `<div>Date/Time: ${dateStr} ${timeStr} GMT-3</div>` +
+            `<div>Last signal: <strong>${j.lastSignalType === 'Mantener' ? 'Hold' : j.lastSignalType === 'Comprar' ? 'Buy' : j.lastSignalType === 'Vender' ? 'Sell' : j.lastSignalType}</strong></div>` +
+            `<div>Date/Time: ${dateStr} ${timeStr} GMT</div>` + // Changed to GMT
             `<div>Variation: <span style="color:${color}">${j.variation.toFixed(2)}%</span></div>`;
         } else {
           details.textContent = '';
