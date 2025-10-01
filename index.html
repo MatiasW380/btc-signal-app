@@ -87,24 +87,6 @@
       background-color: #0c85d0;
     }
 
-    .twitter-feed-container {
-      margin-top: 3rem;
-      padding: 1.5rem;
-      background-color: #282844;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .twitter-feed-container h2 {
-      color: #00bcd4;
-      margin-bottom: 1rem;
-      font-size: 1.8rem;
-    }
-
     /* Responsive adjustments */
     @media (max-width: 768px) {
       body {
@@ -122,7 +104,7 @@
       #summary {
         font-size: 1.1rem;
       }
-      #info, .twitter-feed-container {
+      #info {
         width: 95%;
         padding: 1rem;
       }
@@ -152,8 +134,8 @@
   </style>
 </head>
 <body>
-  <h1>BTC-USD (5m) Scalping</h1>
-  <p class="page-description">This page displays BTC/USDT buy or sell signals based on the most profitable moving average cross from the last two months. We first calculate the most profitable moving average cross and then provide the signal based on that cross. You can also see the profitability of following the signals over the last thirty days.</p>
+  <h1>BTC-USD (15m) Scalping</h1>
+  <p class="page-description">This page displays BTC/USDT buy or sell signals, the last signal, and the variation since that signal. Signals are based on the most profitable moving average cross from the last two months. We first calculate the most profitable moving average cross and then provide the signal based on that cross. You can also see the profitability of following the signals over the last thirty days.</p>
 
   <div id="signal">No active signals</div>
 
@@ -164,12 +146,6 @@
   <pre id="info"></pre>
 
   <a href="https://x.com/X3Bitcoin" target="_blank" class="twitter-link">Follow TheBitcoinX on X</a>
-
-  <div class="twitter-feed-container">
-    <h2>Latest from @X3Bitcoin</h2>
-    <p>Content for the latest publications from @X3Bitcoin would go here.</p>
-    <p>To display live tweets, you'll typically need to use the X (Twitter) API or an official embed widget, which requires a more advanced setup beyond simple HTML/JS due to API rate limits and authentication.</p>
-  </div>
 
   <script>
     async function fetchSignal() {
@@ -208,21 +184,24 @@
         }
 
         // Current Signal
+        let currentSignalText = '';
+        let backgroundColor = '#1a1a2e';
         if (j.signal === 'Mantener' || j.signal === 'Hold') {
-          el.textContent = 'Hold';
+          currentSignalText = 'Hold';
           el.style.color = '#666';
-          document.body.style.backgroundColor = '#1a1a2e';
         } else if (j.signal === 'Comprar' || j.signal === 'Buy') {
-          el.textContent = `Buy (SMA${j.short}/${j.long})`;
+          currentSignalText = `Buy (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
-          document.body.style.backgroundColor = 'green';
+          backgroundColor = 'green';
           alert(`⚡ Signal: Buy`);
         } else if (j.signal === 'Vender' || j.signal === 'Sell') {
-          el.textContent = `Sell (SMA${j.short}/${j.long})`;
+          currentSignalText = `Sell (SMA${j.short}/${j.long})`;
           el.style.color = 'white';
-          document.body.style.backgroundColor = 'red';
+          backgroundColor = 'red';
           alert(`⚡ Signal: Sell`);
         }
+        el.textContent = currentSignalText;
+        document.body.style.backgroundColor = backgroundColor;
 
 
         // Details of the last effective signal
@@ -230,18 +209,27 @@
           const dt = new Date(j.lastSignalTimestamp);
           const dateStr = dt.toLocaleDateString('en-US', {
             timeZone: 'GMT'
-          }); // Changed to GMT
+          });
           const timeStr = dt.toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false,
             timeZone: 'GMT'
-          }); // Changed to GMT
+          });
           const color = j.variation >= 0 ? 'green' : 'red';
 
+          let lastSignalTypeTranslated = j.lastSignalType;
+          if (j.lastSignalType === 'Mantener') {
+            lastSignalTypeTranslated = 'Hold';
+          } else if (j.lastSignalType === 'Comprar') {
+            lastSignalTypeTranslated = 'Buy';
+          } else if (j.lastSignalType === 'Vender') {
+            lastSignalTypeTranslated = 'Sell';
+          }
+
           details.innerHTML =
-            `<div>Last signal: <strong>${j.lastSignalType === 'Mantener' ? 'Hold' : j.lastSignalType === 'Comprar' ? 'Buy' : j.lastSignalType === 'Vender' ? 'Sell' : j.lastSignalType}</strong></div>` +
-            `<div>Date/Time: ${dateStr} ${timeStr} GMT</div>` + // Changed to GMT
+            `<div>Last signal: <strong>${lastSignalTypeTranslated}</strong></div>` +
+            `<div>Date/Time: ${dateStr} ${timeStr} GMT</div>` +
             `<div>Variation: <span style="color:${color}">${j.variation.toFixed(2)}%</span></div>`;
         } else {
           details.textContent = '';
@@ -267,7 +255,7 @@
 
     window.addEventListener('load', () => {
       fetchSignal();
-      setInterval(fetchSignal, 5 * 60 * 1000);
+      setInterval(fetchSignal, 15 * 60 * 1000); // Changed to 15 minutes
     });
   </script>
 </body>
